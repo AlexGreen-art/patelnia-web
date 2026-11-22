@@ -1,0 +1,131 @@
+/* Nic nie przywiera — wygląd. Kolory: czerwień patelni, stal, krem. */
+:root { --tlo:#0e1110; --tlo2:#181d1b; --czerw:#d0282f; --stal:#9aa3ab; --krem:#ece6d6; --ciem:#16130f; }
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { margin:0; height:100%; background:var(--tlo); color:var(--krem); font:17px/1.45 system-ui,"Roboto",sans-serif; overscroll-behavior:none; }
+#app { height:100%; display:flex; flex-direction:column; overflow-y:auto; }
+h1,h2,h3,p { margin:0; }
+button { font:inherit; color:inherit; }
+
+.p { display:block; width:100%; min-height:52px; padding:12px 16px; margin-top:10px; border:2px solid var(--stal); border-radius:12px; background:transparent; font-weight:600; font-size:18px; }
+.p.glowny { background:var(--czerw); border-color:var(--czerw); color:#fff; }
+.p.cichy { border-color:transparent; color:var(--stal); font-weight:400; }
+.p:disabled { opacity:.35; }
+.p:active:not(:disabled), .op:active:not(:disabled) { transform:scale(.98); }
+.mniej { color:var(--stal); font-size:15px; }
+
+/* rysunki zastępcze: gdy jest plik obrazki/<nazwa>.webp, zakrywa rysunek */
+.zast { position:relative; overflow:hidden; background:#222; }
+.zast.jest::before { display:none; } .zast.portret.jest { background:none; border-radius:0; }
+.zast img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:2; }
+.zast::before { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:96px; opacity:.5; z-index:1; }
+.zast-hala { background:linear-gradient(180deg,#0b0f12 0%,#1c262b 55%,#2a2f2f 100%); } .zast-hala::before { content:"🏭"; }
+.zast-sterownia { background:linear-gradient(180deg,#10161f 0%,#1e3040 60%,#27333a 100%); } .zast-sterownia::before { content:"🎛️"; }
+.zast-magazyn { background:linear-gradient(180deg,#17120c 0%,#3a2c1b 60%,#2b2218 100%); } .zast-magazyn::before { content:"📦"; }
+.zast-autostrada { background:linear-gradient(180deg,#07090f 0%,#141c2e 50%,#2b2b2e 51%,#1a1a1c 100%); } .zast-autostrada::before { content:"🚐"; }
+.zast-blokada { background:linear-gradient(180deg,#080b18 0%,#16224a 50%,#2b2b2e 51%,#1a1a1c 100%); } .zast-blokada::before { content:"🚓"; }
+.zast-katalog { background:repeating-linear-gradient(45deg,#e9dfc6 0 14px,#e3d7ba 14px 28px); }
+.zast-plakat { background:radial-gradient(circle at 50% 50%,#f4ecd8 0 38%,#e6dabd 39% 100%); } .zast-plakat::before { content:"🍳"; opacity:1; font-size:110px; }
+.zast-policjant { background:linear-gradient(180deg,#22386b,#16224a); border-radius:50% 50% 12px 12px; } .zast-policjant::before { content:"👮"; opacity:1; font-size:120px; }
+/* Zexter: czarna maska z dwiema szparami */
+.zast-zexter { background:radial-gradient(ellipse at 50% 30%,#2a2a2e 0 34%,transparent 35%), linear-gradient(180deg,transparent 0 52%,#111 52% 100%); }
+.zast-zexter::before { content:""; inset:auto; left:50%; top:9%; width:46%; height:44%; transform:translateX(-50%); border-radius:46% 46% 50% 50%; background:
+  linear-gradient(100deg,transparent 46%,var(--czerw) 47% 53%,transparent 54%) 22% 44%/26% 9% no-repeat,
+  linear-gradient(80deg,transparent 46%,var(--czerw) 47% 53%,transparent 54%) 78% 44%/26% 9% no-repeat, #050505; opacity:1; box-shadow:0 0 0 3px #333; }
+
+/* tytuł */
+.e-tytul { justify-content:space-between; padding:24px 22px 18px; background:radial-gradient(circle at 50% 22%,#2a1214 0,var(--tlo) 60%); }
+.t-gora { text-align:center; padding-top:18px; }
+.t-patelnia { width:150px; height:150px; margin:0 auto 18px; border-radius:50%; background:#1d1d1f; border:10px solid #2d2d30; position:relative; box-shadow:0 10px 30px #000a; }
+.t-patelnia::after { content:""; position:absolute; right:-86px; top:54px; width:92px; height:22px; border-radius:11px; background:#101011; }
+.t-patelnia i { position:absolute; left:50%; top:50%; width:44px; height:44px; margin:-22px; border-radius:50%; background:var(--czerw); box-shadow:0 0 18px var(--czerw); }
+.e-tytul h1 { font:900 46px/1.02 Georgia,"Times New Roman",serif; letter-spacing:1px; text-transform:uppercase; color:var(--krem); text-shadow:3px 3px 0 var(--czerw); }
+.t-pod { margin-top:12px; color:var(--stal); letter-spacing:2px; font-size:14px; text-transform:uppercase; }
+
+/* prolog, jak grać, o grze, przegrana */
+.e-prolog, .e-jakgrac, .e-jakgrac-start, .e-ogrze, .e-przegrana, .e-wygrana { padding:22px; }
+.e-prolog { justify-content:space-between; }
+.pomin { align-self:flex-end; min-height:48px; padding:0 14px; background:none; border:0; color:var(--stal); font-size:16px; }
+.pr-tekst { flex:1; display:flex; align-items:center; } .pr-tekst p { font:22px/1.5 Georgia,serif; }
+.pr-dol span { color:var(--stal); }
+h2 { font:900 30px/1.1 Georgia,serif; margin-bottom:14px; }
+.jak { list-style:none; padding:0; margin:0 0 8px; } .jak li { display:flex; gap:12px; padding:10px 0; border-bottom:1px solid #ffffff14; }
+.jak b { font-size:24px; width:34px; text-align:center; flex:none; }
+.e-ogrze p { margin-bottom:10px; }
+.zak { margin:20px 0 6px; padding:14px; border:1px dashed var(--stal); border-radius:12px; }
+.zak h3 { font-size:16px; margin-bottom:8px; color:var(--stal); } .zak ul { list-style:none; margin:0; padding:0; columns:2; }
+.zak li { padding:3px 0; color:#666; font-size:16px; } .zak li.jest { color:var(--krem); }
+.pg-nad { color:var(--czerw); text-transform:uppercase; letter-spacing:3px; font-size:14px; margin-top:8px; }
+.e-przegrana h2 { font-size:38px; margin-top:4px; } .pg-tekst { font:20px/1.5 Georgia,serif; margin:8px 0 18px; }
+.pg-powod { padding:10px 14px; border-left:4px solid var(--czerw); background:var(--tlo2); margin-bottom:10px; }
+
+/* plansza rundy */
+.e-plansza { position:relative; justify-content:flex-end; }
+.pl-tlo { position:absolute; inset:0; } .pl-tlo::after { content:""; position:absolute; inset:0; z-index:3; background:linear-gradient(180deg,#0000 30%,#000d 75%); }
+.pl-tresc { position:relative; z-index:4; padding:22px; } .pl-nr { color:var(--czerw); text-transform:uppercase; letter-spacing:3px; font-weight:700; }
+.pl-tresc h2 { font-size:44px; margin:2px 0 10px; } .pl-tresc p { font-size:19px; }
+
+/* scena */
+.e-scena { overflow:hidden; }
+.pasek { display:flex; gap:8px; padding:8px 10px; background:#000; flex:none; }
+.licz { flex:1; position:relative; text-align:center; padding:4px 0 6px; border-radius:10px; background:var(--tlo2); border:1px solid #ffffff1a; }
+.licz small { display:block; font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--stal); }
+.licz b { font-size:24px; line-height:1; } .licz b i { font-style:normal; font-size:13px; color:var(--stal); }
+.licz.goraco { border-color:var(--czerw); animation:puls 1s infinite; } .licz.goraco b { color:#ff5a60; }
+@keyframes puls { 50% { background:#5a1215; } }
+.licz.blysk { animation:blysk .5s; } @keyframes blysk { 30% { transform:scale(1.08); } }
+.fru { position:absolute; right:8px; top:2px; font-weight:800; font-size:20px; animation:fru 1.6s forwards; pointer-events:none; }
+.fru.dobrze { color:#7ddc8a; } .fru.zle { color:#ff5a60; }
+@keyframes fru { 0% { opacity:0; transform:translateY(10px); } 15% { opacity:1; } 75% { opacity:1; } 100% { opacity:0; transform:translateY(-8px); } }
+.sc-wrap { flex:1; position:relative; overflow:hidden; }
+.sc-tlo { position:absolute; inset:0; }
+.sc-tlo > .zast { position:absolute; inset:0; }
+.sc-nr { position:absolute; left:10px; top:8px; z-index:5; font-size:13px; color:#fffb; background:#0008; padding:2px 8px; border-radius:8px; }
+#portret { position:absolute; left:0; right:0; top:5%; bottom:110px; z-index:4; display:flex; justify-content:center; align-items:flex-end; }
+.portret { height:100%; width:100%; background-color:transparent; }
+.portret:not(.jest) { height:250px; width:210px; }
+.portret img { object-fit:contain; object-position:bottom center; }
+.panel { position:absolute; left:0; right:0; bottom:0; z-index:6; max-height:72%; overflow-y:auto; padding:14px 16px 16px; background:var(--ciem); border-top:3px solid var(--stal); min-height:150px; }
+.panel.k-z { border-top-color:var(--czerw); } .panel.k-t { border-top-color:var(--krem); } .panel.k-p, .panel.k-d { border-top-color:#4f7bd6; }
+.kto { font-weight:800; letter-spacing:1px; text-transform:uppercase; font-size:14px; margin-bottom:4px; color:var(--stal); }
+.k-z .kto { color:#ff5a60; } .k-t .kto { color:var(--krem); } .k-p .kto, .k-d .kto { color:#8fb0f0; }
+.kw { font-size:19px; } .k-n .kw { font-style:italic; color:#d6d0c2; }
+.stuk { text-align:right; color:var(--stal); font-size:13px; margin-top:8px; }
+.panel.opcje { padding-top:10px; }
+.op { display:block; width:100%; min-height:52px; text-align:left; padding:11px 14px; margin-top:8px; border:1.5px solid #ffffff33; border-radius:12px; background:var(--tlo2); font-size:17px; line-height:1.35; }
+.op em { display:block; font-style:normal; font-size:12px; letter-spacing:1px; text-transform:uppercase; margin-bottom:2px; }
+.op .wym { color:var(--stal); } .op.zamk { opacity:.45; border-style:dashed; }
+.op.naj { border-color:var(--czerw); box-shadow:0 0 0 1px var(--czerw) inset; } .op .t180 { color:#ff5a60; font-weight:800; }
+
+/* katalog — gazetka */
+.e-katalog { background:#e9dfc6; color:#1b1712; position:relative; }
+.kat-tlo { position:absolute; inset:0; opacity:.6; } .e-katalog > :not(.kat-tlo) { position:relative; z-index:3; }
+.kat-gl { padding:16px 16px 8px; text-align:center; } .kat-nad { font-size:13px; letter-spacing:2px; color:var(--czerw); font-weight:800; }
+.kat-gl h2 { font-size:34px; margin:0; color:#1b1712; text-shadow:2px 2px 0 #fff8; } .kat-bony { display:inline-block; margin-top:6px; padding:4px 14px; background:var(--czerw); color:#fff; border-radius:20px; transform:rotate(-2deg); }
+.kat-lista { padding:4px 12px; }
+.karta { display:flex; align-items:center; gap:10px; margin-top:8px; padding:10px; background:#fffaf0; border:2px solid #1b1712; border-radius:10px; box-shadow:3px 3px 0 #1b1712; }
+.karta.mam { opacity:.6; box-shadow:none; }
+.k-rys { flex:none; width:46px; height:46px; border-radius:50%; background:#1d1d1f; border:4px solid #3a3a3e; position:relative; }
+.k-rys i { position:absolute; left:50%; top:50%; width:12px; height:12px; margin:-6px; border-radius:50%; background:var(--czerw); }
+.k-gril { background:repeating-linear-gradient(90deg,#1d1d1f 0 5px,#55555a 5px 8px); border-radius:8px; } .k-wok { border-radius:8px 8px 50% 50%; } .k-nal { border-width:2px; } .k-ing { border-color:var(--czerw); } .k-thermo i { width:22px; height:22px; margin:-11px; box-shadow:0 0 8px var(--czerw); }
+.k-op { flex:1; min-width:0; } .k-op h3 { font:800 17px/1.2 Georgia,serif; } .k-op p { font-size:14px; line-height:1.3; margin-top:2px; }
+.k-kup { flex:none; text-align:center; width:74px; } .cena { display:block; font:900 24px/1 Georgia,serif; color:var(--czerw); } .cena small { font-size:11px; }
+.kup { min-height:48px; margin-top:4px; padding:4px; border-color:#1b1712; background:#1b1712; color:#fff; font-size:16px; }
+.masz { display:block; margin-top:8px; font-weight:700; font-size:14px; }
+.kat-dol { padding:10px 16px 18px; margin-top:auto; } .kat-dol p { font-size:14px; text-align:center; }
+
+/* wygrana — plakat retro */
+.e-wygrana { background:var(--ciem); }
+.plakat { background:linear-gradient(180deg,#1a0b3a,#0d0620); color:#f3e9ff; padding:18px 16px 16px; border:3px solid #ff2fa8; box-shadow:0 0 18px #ff2fa888, inset 0 0 0 3px #1a0b3a, inset 0 0 0 5px #29c8ff; text-align:center; }
+.pk-gw { color:#29c8ff; letter-spacing:10px; font-size:20px; text-shadow:0 0 8px #29c8ff; }
+.plakat h2 { font:italic 900 38px/1 "Arial Black",Arial,sans-serif; margin:6px 0 12px; letter-spacing:1px; background:linear-gradient(180deg,#ffd23f 20%,#ff5a3c 55%,#ff2fa8 90%); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(2px 2px 0 #29c8ff); }
+.pk-rys { width:100%; aspect-ratio:1; margin:0 auto 12px; border:2px solid #29c8ff; }
+.pk-tekst { font:800 21px/1.25 Arial,sans-serif; color:#fff; } .pk-dop { margin-top:6px; font-style:italic; color:#ffd23f; }
+.pk-rekl { margin-top:14px; padding-top:12px; border-top:2px solid #ff2fa8; text-align:left; } .pk-rekl p { font-size:14px; line-height:1.45; color:#d9ccf5; }
+.pk-haslo { margin-top:12px; font:italic 900 17px/1.2 "Arial Black",Arial,sans-serif; color:#ff2fa8; text-transform:uppercase; letter-spacing:1px; text-shadow:0 0 8px #ff2fa8aa; }
+
+/* okno pytania */
+.modal { position:fixed; inset:0; z-index:50; background:#000b; display:flex; align-items:center; justify-content:center; padding:24px; }
+.okno { width:100%; max-width:360px; background:var(--tlo2); border:2px solid var(--stal); border-radius:16px; padding:20px; } .okno p { font-size:19px; margin-bottom:6px; }
+
+.licz.koniec { opacity:.55; } .licz b.mniej-b { font-size:15px; line-height:24px; font-weight:700; }
+.pg-jak { font:italic 18px/1.45 Georgia,serif; color:var(--stal); margin-top:8px; }

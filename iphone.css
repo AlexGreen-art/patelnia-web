@@ -1,0 +1,9 @@
+/* Wersja na iPhone'a / iPada: gra w pionowej karcie 2:3 na środku, z dala od notcha i paska. */
+html { height:100%; background:#000; }
+body { height:100vh; height:100dvh; background:#000; display:flex; justify-content:center;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+#app { position:relative; flex:none; height:100%; width:100%;
+  max-width:calc((100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 2 / 3); background:var(--tlo); }
+.ios-menu { position:absolute; right:10px; z-index:20; width:44px; height:44px; border-radius:50%;
+  border:1px solid #ffffff40; background:#000a; color:var(--krem); font-size:20px; line-height:1; padding:0; }
+.e-scena .ios-menu { top:58px; } .e-plansza .ios-menu, .e-katalog .ios-menu { top:10px; }
