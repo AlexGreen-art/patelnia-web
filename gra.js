@@ -1,7 +1,7 @@
 // Nic nie przywiera — zasady gry (Silnik) i ekrany.
 var MARKA = "Tefal";   // jedna stała: zmiana marki w całej grze
 var MARKA_MOPA = "Vileda";   // druga marka (mop, klamerki)
-var AUTOR = "";        // podpis autorki (wpisz między cudzysłowy)
+var AUTOR = "Aleksandra Stelmach";        // podpis autorki (wpisz między cudzysłowy)
 
 var Silnik = (function () {
   var S = (typeof SCENY !== "undefined") ? SCENY : require("./sceny.js");
@@ -163,7 +163,7 @@ if (typeof document !== "undefined") (function () {
     var w = "";
     try { if (window.Android && Android.wersja) w = Android.wersja(); } catch (e) {}
     var odk = odkryte();
-    pokaz("ogrze", '<h2>O grze</h2><p>Nic nie przywiera. Wykonanie przy użyciu Claude Fable 5.2.</p>' +
+    pokaz("ogrze", '<h2>O grze</h2><p>Nic nie przywiera. Wykonanie przy użyciu Claude Fable 5.2 i GPT-6.</p>' +
       (AUTOR ? '<p>' + esc(AUTOR) + '</p>' : "") +
       '<p class="mniej">Wersja ' + esc(w || "podgląd") + '</p>' + listaZakonczen(odk) +
       '<button class="p glowny" id="b-ok">Wróć</button>');
