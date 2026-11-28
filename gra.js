@@ -88,6 +88,8 @@ if (typeof document !== "undefined") (function () {
   var PATELNIE = {};
   S.katalog.forEach(function (k) { PATELNIE[k.id] = k; });
   var KROTKO = { nal: "naleśnikowa", gril: "grillowa", wok: "wok", ing: "Ingenio" };
+  var D = (typeof Dzwiek !== "undefined") ? Dzwiek : { tlo: function () {}, efekt: function () {}, wejscie: function () {}, wynik: function () {},
+           przegrana: function () {}, wygrana: function () {}, wlaczony: function () { return false; }, przelacz: function () { return false; } };
 
   function esc(t) { return T(t).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
   function kopia(o) { return JSON.parse(JSON.stringify(o)); }
@@ -121,6 +123,7 @@ if (typeof document !== "undefined") (function () {
   /* ── tytuł ── */
   function tytul() {
     var z = czytaj(KLUCZ);
+    D.tlo(null);
     pokaz("tytul",
       '<div class="t-gora"><div class="t-patelnia"><i></i></div><h1>Nic nie<br>przywiera</h1><p class="t-pod">dziennikarka · patelnia · morderca</p></div>' +
       '<div class="t-menu">' +
@@ -128,6 +131,7 @@ if (typeof document !== "undefined") (function () {
       (z && z.st && !z.st.koniec ? '<button class="p" id="b-kont">Kontynuuj</button>' : "") +
       '<button class="p" id="b-jak">Jak grać</button>' +
       '<button class="p" id="b-o">O grze</button>' +
+      '<button class="p" id="b-dzw">' + (D.wlaczony() ? "Dźwięk: włączony" : "Dźwięk: wyłączony") + '</button>' +
       '<button class="p cichy" id="b-wyjdz">Wyjdź z gry</button></div>');
     klik("#b-nowa", function () {
       if (z && z.st && !z.st.koniec) pytanie("Zacząć od nowa? Zapisana gra zniknie.", "Nowa gra", "Anuluj", nowaGra); else nowaGra();
@@ -138,6 +142,7 @@ if (typeof document !== "undefined") (function () {
     });
     klik("#b-jak", function () { jakGrac(false); });
     klik("#b-o", oGrze);
+    klik("#b-dzw", function () { var w = D.przelacz(); this.textContent = w ? "Dźwięk: włączony" : "Dźwięk: wyłączony"; });
     klik("#b-wyjdz", function () { if (window.Android && Android.zamknij) Android.zamknij(); });
   }
 
@@ -145,6 +150,7 @@ if (typeof document !== "undefined") (function () {
 
   /* ── prolog, jak grać, o grze ── */
   function prolog(i) {
+    D.tlo("hala");
     pokaz("prolog", '<button class="pomin" id="b-pomin">Pomiń</button><div class="pr-tekst"><p>' + esc(S.prolog[i]) + '</p></div>' +
       '<div class="pr-dol"><span>' + (i + 1) + " / " + S.prolog.length + '</span><button class="p glowny" id="b-dalej">Dalej →</button></div>');
     klik("#b-pomin", function () { jakGrac(true); });
@@ -181,6 +187,8 @@ if (typeof document !== "undefined") (function () {
   /* ── plansza rundy ── */
   function plansza() {
     var r = S.rundy[st.r];
+    D.tlo(r.tlo);
+    if (st.r === 1) D.efekt("E07");
     pokaz("plansza", obraz(r.tlo, "pl-tlo") + '<div class="pl-tresc"><p class="pl-nr">Runda ' + (st.r + 1) + '</p><h2>' + esc(r.nazwa) + '</h2><p>' + esc(r.plansza) + '</p>' +
       '<button class="p glowny" id="b-dalej">Dalej →</button></div>');
     klik("#b-dalej", function () { scenaEkran(); });
@@ -202,6 +210,8 @@ if (typeof document !== "undefined") (function () {
     var kolejka = sc.k.slice();
     var o = Silnik.ostrzezenie(st);
     if (o) { kolejka.push(["n", o]); zapisz(); }
+    D.tlo(sc.tlo || r.tlo);
+    D.wejscie(st.r, st.s);
     pokaz("scena", pasek() + '<div class="sc-wrap"><div class="sc-tlo">' + obraz(sc.tlo || r.tlo, "", r.tlo) + '<div id="portret"></div><div class="sc-nr">Runda ' + (st.r + 1) + " · " + (st.s + 1) + "/" + r.sceny.length + '</div></div>' +
       '<div class="panel" id="panel"></div></div>');
     czytajKwestie(kolejka, pokazOpcje);
@@ -244,7 +254,10 @@ if (typeof document !== "undefined") (function () {
       var b = e.target.closest ? e.target.closest(".op") : null;
       if (!b || b.disabled) return;
       panel.onclick = null;
-      var w = Silnik.wybierz(st, +b.getAttribute("data-i"));
+      var ri = st.r, si = st.s, oi = +b.getAttribute("data-i");
+      D.efekt("E22");
+      var w = Silnik.wybierz(st, oi);
+      if (w) D.wynik(ri, si, oi);
       if (!w) return;
       if (st.etap === "katalog") migawka = kopia(st);
       if (st.koniec) { odkryj(st.koniec.id); kasujZapis(); } else zapisz();
@@ -277,6 +290,7 @@ if (typeof document !== "undefined") (function () {
 
   /* ── katalog ── */
   function katalog() {
+    D.tlo(null);
     pokaz("katalog", obraz("katalog", "kat-tlo") + '<div class="kat-gl"><p class="kat-nad">GAZETKA · tylko dziś w nocy</p><h2>Katalog ' + esc("{MARKA}") + '</h2>' +
       '<p class="kat-bony">Masz bonów: <b>' + st.bony + '</b></p></div><div class="kat-lista">' +
       S.katalog.map(function (k) {
@@ -286,7 +300,7 @@ if (typeof document !== "undefined") (function () {
           (mam ? '<span class="masz">✓ masz</span>' : '<button class="p kup" data-id="' + k.id + '"' + (stac ? "" : " disabled") + '>Kup</button>') + '</div></div>';
       }).join("") + '</div><div class="kat-dol"><p>Następna runda: ' + (st.r + 1) + ". " + esc(S.rundy[st.r].nazwa) + '</p><button class="p glowny" id="b-dalej">Dalej →</button></div>');
     app.querySelectorAll(".kup").forEach(function (b) {
-      b.addEventListener("click", function () { if (Silnik.kup(st, b.getAttribute("data-id"))) { zapisz(); katalog(); } });
+      b.addEventListener("click", function () { if (Silnik.kup(st, b.getAttribute("data-id"))) { D.efekt("E23"); zapisz(); katalog(); } });
     });
     klik("#b-dalej", function () { Silnik.zKatalogu(st); zapisz(); plansza(); });
   }
@@ -294,6 +308,7 @@ if (typeof document !== "undefined") (function () {
   /* ── koniec ── */
   function przegrana() {
     var k = st.koniec, p = k.powod === "ego" ? S.przegranaFinal : S.rundy[st.r].przegrana;
+    D.przegrana(p.id);
     var powod = k.powod === "ego" ? "Ego Zextera nie spadło do zera, więc nie dał się złapać." : "Pościg doszedł do 10: Zexter cię dogonił.";
     pokaz("przegrana", '<p class="pg-nad">Przegrana</p><h2>' + esc(p.tytul) + '</h2>' + (p.jak ? '<p class="pg-jak">' + esc(p.jak) + '</p>' : "") + '<p class="pg-tekst">' + esc(p.tekst) + '</p><p class="pg-powod">' + powod + '</p>' +
       '<button class="p glowny" id="b-runda">Zacznij rundę od nowa</button><button class="p" id="b-menu">Menu</button>' + listaZakonczen(odkryte()));
@@ -306,6 +321,7 @@ if (typeof document !== "undefined") (function () {
 
   function wygrana() {
     var w = S.wygrana;
+    D.wygrana();
     pokaz("wygrana", '<div class="plakat"><div class="pk-gw">★ ★ ★</div><h2>' + esc(w.naglowek) + '</h2>' +
       obraz("plakat", "pk-rys") + '<p class="pk-tekst">' + esc(w.tekst) + '</p><p class="pk-dop">' + esc(w.dopisek) + '</p>' +
       '<div class="pk-rekl"><p>' + esc(w.reklama) + '</p></div><p class="pk-haslo">' + esc(w.haslo) + '</p></div>' +
