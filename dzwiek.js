@@ -12,41 +12,63 @@ var Dzwiek = (function () {
     E16: "E16_radio", E17: "E17_klakson", E18: "E18_paleta_na_suva", E19: "E19_grill_pod_maske", E20: "E20_peka_opona",
     E21: "E21_suv_sie_obraca", E22: "E22_klikniecie", E23: "E23_kasa_katalog",
     P0: "P0_przegrana", P1: "P1_zupa", P2: "P2_kurs_tanca", P3: "P3_kregle", P4: "P4_mielno", P5: "P5_pluszaki", P6: "P6_zexter_pro",
-    W1: "W1_skwierczenie", W2: "W2_retro_reklama"
+    W1: "W1_skwierczenie", W2: "W2_retro_reklama",
+    T2b: "T2b_tlo_sterownia_tasmy", G1: "G1_gasnica", G2: "G2_klamka_pod_pradem", G3: "G3_telefon"
   };
+  // długość efektów w ms (do blokady przeklikiwania)
+  var DLUG = { E01: 1358, E02: 1071, E03: 2037, E04: 809, E05: 1541, E06: 2533, E07: 4048, E08a: 1959, E08c: 679, E09: 2246, E10: 783,
+    E11: 2612, E12: 2638, E13: 3030, E14: 4048, E15: 3108, E16: 2037, E17: 1567, E18: 2847, E19: 2873, E20: 1149, E21: 2246,
+    E22: 522, E23: 914, G1: 2638, G2: 1750, G3: 1201 };
+  var BLOKADA_MAX = 3000;
   // tło według obrazka sceny (parking: cisza nocy, bez pętli)
   var TLA = { hala: "T1", sterownia: "T2", magazyn: "T3", autostrada: "T4", palety: "T4", blokada: "T5" };
   // efekt na wejściu do sceny: "runda.scena" (liczone od 1)
-  var WEJSCIE = { "1.2": "E03", "2.2": "E09", "2.5": "E11", "3.3": "E12", "3.5": "E13", "3.6": "E14", "4.1": "E16", "5.4": "E21" };
+  var WEJSCIE = { "1.2": "E03", "2.2": "E09", "2.5": "E11", "3.3": "E12", "3.5": "E13", "3.6": "E14", "4.1": "E16", "4.3": "G3",
+                  "4.5": "E18", "5.4": "E21" };
   // efekt po wybraniu odpowiedzi: "runda.scena.odpowiedź" (liczone od 1)
   var WYNIK = {
     "1.1.1": "E02", "1.1.2": "E02", "1.1.3": "E01", "1.5.3": "E06", "1.6.1": "E04", "1.6.3": "E05",
-    "2.1.1": "E08a", "2.1.4": "E08c", "2.3.1": "E10", "2.3.2": "E10", "2.3.3": "E10", "2.3.4": "E10",
-    "3.6.1": "E15", "3.6.2": "E15", "3.6.3": "E15", "3.6.4": "E15",
-    "4.4.4": "E17", "4.5.1": "E18", "4.6.1": "E18", "4.6.2": "E19", "5.2.1": "E20", "5.2.5": "E20", "5.4.4": "E17"
+    "2.1.1": "E08a", "2.1.4": "E08c", "2.2.1": "E09", "2.3.1": "E10", "2.3.2": "E10", "2.3.3": "E10", "2.3.4": "E10",
+    "2.4.1": "G1", "2.4.5": "E05", "2.5.3": "E01", "2.6.2": "G2",
+    "3.2.1": "E09", "3.3.1": "E12", "3.6.1": "E15", "3.6.2": "E15", "3.6.3": "E15", "3.6.4": "E15",
+    "4.4.4": "E17", "4.6.1": "E18", "4.6.2": "E19", "5.2.1": "E20", "5.2.5": "E20", "5.4.4": "E17"
   };
   var PRZEGRANE = { zupa: "P1", taniec: "P2", kregle: "P3", mielno: "P4", pluszaki: "P5", zexterpro: "P6" };
-  var GLOS = { tlo: 0.7, efekt: 1, klik: 0.6 };
+  var GLOS = { tlo: 0.85, efekt: 1, klik: 0.6 };
   var KLUCZ = "patelnia_dzwiek";
 
   var wl = true;
   try { wl = localStorage.getItem(KLUCZ) !== "0"; } catch (e) {}
   var JEST = typeof Audio !== "undefined";
 
-  function src(kod) { return "dzwieki/" + PLIKI[kod] + ".mp3"; }
+  var GOTOWE = {};   // kod → adres pliku wczytanego do pamięci
+  function src(kod) { return GOTOWE[kod] || ("dzwieki/" + PLIKI[kod] + ".mp3"); }
+  // Wczytuje wszystkie dźwięki na starcie, żeby nie spóźniały się za obrazkiem. postep(gotowe, wszystkie)
+  function wczytaj(postep, koniec) {
+    var kody = Object.keys(PLIKI), n = 0;
+    if (!JEST || typeof fetch === "undefined" || location.protocol === "file:") { if (koniec) koniec(); return kody.length; }
+    Promise.all(kody.map(function (k) {
+      return fetch("dzwieki/" + PLIKI[k] + ".mp3").then(function (r) { return r.ok ? r.blob() : null; })
+        .then(function (b) { if (b) GOTOWE[k] = URL.createObjectURL(b); })
+        .catch(function () {})
+        .then(function () { n++; if (postep) postep(n, kody.length); });
+    })).then(function () { if (koniec) koniec(); });
+    return kody.length;
+  }
   function graj(a) { try { var p = a.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
 
   /* ── pula odtwarzaczy, odblokowana pierwszym dotknięciem ── */
   var CISZA = "dzwieki/cisza.mp3";   // 0,1 s ciszy do odblokowania
-  var tloA = [], efA = [], nastEf = 0, odblok = false;
+  var tloA = [], efA = [], klikA = null, nastEf = 0, odblok = false;
   if (JEST) {
     for (var i = 0; i < 2; i++) { var t = new Audio(); t.preload = "auto"; tloA.push(t); }
-    for (var j = 0; j < 6; j++) { var e = new Audio(); e.preload = "auto"; efA.push(e); }
+    for (var j = 0; j < 8; j++) { var e = new Audio(); e.preload = "auto"; efA.push(e); }
+    klikA = new Audio(); klikA.preload = "auto";
   }
   function odblokuj() {
     if (odblok || !JEST) return;
     odblok = true;
-    tloA.concat(efA).forEach(function (a) {
+    tloA.concat(efA, [klikA]).forEach(function (a) {
       if (a.src) return;                       // już gra coś prawdziwego
       a.src = CISZA; a.muted = true;
       var p = a.play();
@@ -86,8 +108,13 @@ var Dzwiek = (function () {
       }
     }, 50);
   }
-  function tlo(nazwa) {
-    var kod = nazwa ? (TLA[nazwa] || null) : null;
+  var tasmyStop = false;
+  function tloSceny(r, s, nazwa) {
+    if (nazwa === "sterownia" && r === 1 && s >= 1 && !tasmyStop) { ustawTlo("T2b"); return; }
+    tlo(nazwa);
+  }
+  function tlo(nazwa) { ustawTlo(nazwa ? (TLA[nazwa] || null) : null); }
+  function ustawTlo(kod) {
     if (kod === tloKod) return;
     tloKod = kod;
     if (!wl || !kod || !JEST) { stopTlo(); return; }
@@ -97,7 +124,12 @@ var Dzwiek = (function () {
   /* ── efekty: kolejny wolny odtwarzacz z puli ── */
   function efekt(kod, potem) {
     if (!wl || !JEST || !PLIKI[kod]) { if (potem) potem(); return; }
-    var a = efA[nastEf]; nastEf = (nastEf + 1) % efA.length;
+    var a = null;
+    if (kod === "E22") a = klikA;
+    else {
+      for (var i = 0; i < efA.length; i++) { var x = efA[(nastEf + i) % efA.length]; if (x.paused || x.ended) { a = x; nastEf = (nastEf + i + 1) % efA.length; break; } }
+      if (!a) { a = efA[nastEf]; nastEf = (nastEf + 1) % efA.length; }
+    }
     try { a.pause(); } catch (e) {}
     a.onended = potem ? function () { a.onended = null; potem(); } : null;
     a.muted = false; a.loop = false;
@@ -105,8 +137,13 @@ var Dzwiek = (function () {
     if (GLOSNOSC) a.volume = kod === "E22" ? GLOS.klik : GLOS.efekt;
     graj(a);
   }
-  function wejscie(r, s) { var k = WEJSCIE[(r + 1) + "." + (s + 1)]; if (k) efekt(k); }
-  function wynik(r, s, i) { var k = WYNIK[(r + 1) + "." + (s + 1) + "." + (i + 1)]; if (k) efekt(k); }
+  // zwraca, ile ms nie wolno przeklikać ekranu (dźwięk ma wybrzmieć)
+  function blokada(k) { return wl && JEST && k ? Math.min(DLUG[k] || 0, BLOKADA_MAX) : 0; }
+  function wejscie(r, s) { if (s === 0) tasmyStop = false; var k = WEJSCIE[(r + 1) + "." + (s + 1)]; if (k) efekt(k); return blokada(k); }
+  function wynik(r, s, i) {
+    if (r === 1 && s === 1 && i === 1) { tasmyStop = true; ustawTlo("T2"); }   // „Wyłączyć” taśmy
+    var k = WYNIK[(r + 1) + "." + (s + 1) + "." + (i + 1)]; if (k) efekt(k); return blokada(k);
+  }
   function przegrana(id) { tlo(null); efekt("P0", function () { if (PRZEGRANE[id]) efekt(PRZEGRANE[id]); }); }
   function wygrana() { tlo(null); efekt("W2", function () { efekt("W1"); }); }
 
@@ -115,7 +152,7 @@ var Dzwiek = (function () {
   function przelacz() {
     wl = !wl;
     try { localStorage.setItem(KLUCZ, wl ? "1" : "0"); } catch (e) {}
-    if (!wl) { stopTlo(); efA.forEach(function (a) { try { a.pause(); } catch (e) {} }); }
+    if (!wl) { stopTlo(); efA.concat([klikA]).forEach(function (a) { try { a.pause(); } catch (e) {} }); }
     else if (tloKod) startTlo(tloKod);
     return wl;
   }
@@ -126,7 +163,7 @@ var Dzwiek = (function () {
     else if (wl && tloKod) graj(tloA[akt]);
   });
 
-  return { tlo: tlo, efekt: efekt, wejscie: wejscie, wynik: wynik, przegrana: przegrana, wygrana: wygrana,
+  return { tlo: tlo, tloSceny: tloSceny, wczytaj: wczytaj, blokada: blokada, efekt: efekt, wejscie: wejscie, wynik: wynik, przegrana: przegrana, wygrana: wygrana,
            wlaczony: wlaczony, przelacz: przelacz, PLIKI: PLIKI, WEJSCIE: WEJSCIE, WYNIK: WYNIK, PRZEGRANE: PRZEGRANE };
 })();
 if (typeof module !== "undefined") module.exports = Dzwiek;

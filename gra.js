@@ -89,7 +89,8 @@ if (typeof document !== "undefined") (function () {
   S.katalog.forEach(function (k) { PATELNIE[k.id] = k; });
   var KROTKO = { nal: "naleśnikowa", gril: "grillowa", wok: "wok", ing: "Ingenio" };
   var D = (typeof Dzwiek !== "undefined") ? Dzwiek : { tlo: function () {}, efekt: function () {}, wejscie: function () {}, wynik: function () {},
-           przegrana: function () {}, wygrana: function () {}, wlaczony: function () { return false; }, przelacz: function () { return false; } };
+           przegrana: function () {}, wygrana: function () {}, wlaczony: function () { return false; }, przelacz: function () { return false; },
+           tloSceny: function () {} };
 
   function esc(t) { return T(t).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
   function kopia(o) { return JSON.parse(JSON.stringify(o)); }
@@ -188,10 +189,12 @@ if (typeof document !== "undefined") (function () {
   function plansza() {
     var r = S.rundy[st.r];
     D.tlo(r.tlo);
-    if (st.r === 1) D.efekt("E07");
+    var czekaj = 0;
+    if (st.r === 1) { D.efekt("E07"); czekaj = D.blokada ? D.blokada("E07") : 0; }
     pokaz("plansza", obraz(r.tlo, "pl-tlo") + '<div class="pl-tresc"><p class="pl-nr">Runda ' + (st.r + 1) + '</p><h2>' + esc(r.nazwa) + '</h2><p>' + esc(r.plansza) + '</p>' +
       '<button class="p glowny" id="b-dalej">Dalej →</button></div>');
     klik("#b-dalej", function () { scenaEkran(); });
+    if (czekaj) { var bd = app.querySelector("#b-dalej"); bd.disabled = true; setTimeout(function () { bd.disabled = false; }, czekaj); }
   }
 
   /* ── scena ── */
@@ -210,11 +213,11 @@ if (typeof document !== "undefined") (function () {
     var kolejka = sc.k.slice();
     var o = Silnik.ostrzezenie(st);
     if (o) { kolejka.push(["n", o]); zapisz(); }
-    D.tlo(sc.tlo || r.tlo);
-    D.wejscie(st.r, st.s);
+    D.tloSceny(st.r, st.s, sc.tlo || r.tlo);
+    var blok = D.wejscie(st.r, st.s) || 0;
     pokaz("scena", pasek() + '<div class="sc-wrap"><div class="sc-tlo">' + obraz(sc.tlo || r.tlo, "", r.tlo) + '<div id="portret"></div><div class="sc-nr">Runda ' + (st.r + 1) + " · " + (st.s + 1) + "/" + r.sceny.length + '</div></div>' +
       '<div class="panel" id="panel"></div></div>');
-    czytajKwestie(kolejka, pokazOpcje);
+    czytajKwestie(kolejka, pokazOpcje, blok);
   }
 
   function ustawPortret(kto) {
@@ -223,8 +226,9 @@ if (typeof document !== "undefined") (function () {
     p.innerHTML = PORTRET[kto] ? obraz(PORTRET[kto], "portret") : "";
   }
 
-  function czytajKwestie(kolejka, potem) {
-    var i = 0, panel = document.getElementById("panel");
+  // blok: ile ms pierwsza kwestia czeka, zanim da się ją przeklikać (dźwięk ma wybrzmieć)
+  function czytajKwestie(kolejka, potem, blok) {
+    var i = 0, panel = document.getElementById("panel"), wolno = Date.now() + (blok || 0);
     function krok() {
       if (i >= kolejka.length) { panel.onclick = null; potem(); return; }
       var k = kolejka[i++];
@@ -232,8 +236,13 @@ if (typeof document !== "undefined") (function () {
       panel.className = "panel k-" + k[0];
       panel.innerHTML = (NAZWY[k[0]] ? '<div class="kto">' + NAZWY[k[0]] + '</div>' : "") + '<p class="kw">' + esc(k[1]) + '</p><div class="stuk">dotknij ▸</div>';
       panel.scrollTop = 0;
+      var zost = wolno - Date.now();
+      if (zost > 0) {
+        var s = panel.querySelector(".stuk"); s.style.visibility = "hidden";
+        setTimeout(function () { s.style.visibility = ""; }, zost);
+      }
     }
-    panel.onclick = krok;
+    panel.onclick = function () { if (Date.now() < wolno) return; krok(); };
     krok();
   }
 
@@ -257,12 +266,12 @@ if (typeof document !== "undefined") (function () {
       var ri = st.r, si = st.s, oi = +b.getAttribute("data-i");
       D.efekt("E22");
       var w = Silnik.wybierz(st, oi);
-      if (w) D.wynik(ri, si, oi);
+      var blokW = w ? (D.wynik(ri, si, oi) || 0) : 0;
       if (!w) return;
       if (st.etap === "katalog") migawka = kopia(st);
       if (st.koniec) { odkryj(st.koniec.id); kasujZapis(); } else zapisz();
       odswiezPasek(w.d);
-      czytajKwestie(w.r, poWyborze);
+      czytajKwestie(w.r, poWyborze, blokW);
     };
   }
 

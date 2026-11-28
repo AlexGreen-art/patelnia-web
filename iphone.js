@@ -30,9 +30,17 @@
         im.onload = function () { (im.decode ? im.decode() : Promise.resolve()).catch(function () {}).then(ok); };
         im.onerror = ok;
         im.src = "obrazki/" + n + ".webp";
-      }).then(function () { gotowe++; zaslona.querySelector(".ios-licz").textContent = gotowe + " / " + OBRAZKI.length; });
+      }).then(function () { gotowe++; if (typeof licz === "function") licz(); });
     }
-    Promise.all(OBRAZKI.map(jeden)).then(function () { zaslona.remove(); });
+    // dźwięki wczytują się razem z obrazkami, żeby nie spóźniały się za sceną
+    var dzw = 0, dzwW = 0;
+    function licz() { zaslona.querySelector(".ios-licz").textContent = (gotowe + dzw) + " / " + (OBRAZKI.length + dzwW); }
+    var dzwieki = new Promise(function (ok) {
+      if (!window.Dzwiek || !Dzwiek.wczytaj) return ok();
+      dzwW = Dzwiek.wczytaj(function (n) { dzw = n; licz(); }, ok);
+      licz();
+    });
+    Promise.all(OBRAZKI.map(jeden).concat([dzwieki])).then(function () { zaslona.remove(); });
   }
   window.addEventListener("DOMContentLoaded", function () {
     wczytajWszystko();
